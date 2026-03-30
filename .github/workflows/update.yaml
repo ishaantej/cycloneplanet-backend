@@ -1,0 +1,29 @@
+name: Update Storm Data
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Run script
+        run: node fetch.js
+
+      - name: Commit changes
+        run: |
+          git config user.name "storm-bot"
+          git config user.email "storm@bot.com"
+          git add data.json
+          git commit -m "Auto update storm data" || echo "No changes"
+          git push
