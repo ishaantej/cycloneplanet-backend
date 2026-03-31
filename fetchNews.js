@@ -59,17 +59,18 @@ async function run() {
 
   // 🧠 FILTER: ANY cyclone-related news
   let filtered = allArticles.filter(a => {
-    let t = a.title.toLowerCase();
-    return (
-      t.includes("cyclone") ||
-      t.includes("storm") ||
-      t.includes("hurricane") ||
-      t.includes("typhoon") ||
-      t.includes("weather") ||
-      t.includes("rain") ||
-      t.includes("flood")
-    );
-  });
+  let t = a.title.toLowerCase();
+  return (
+    t.includes("cyclone") ||
+    t.includes("storm") ||
+    t.includes("hurricane") ||
+    t.includes("typhoon") ||
+    t.includes("weather") ||
+    t.includes("rain") ||
+    t.includes("flood") ||
+    t.includes("wind")
+  );
+});
 
   console.log("Filtered:", filtered.length);
 
