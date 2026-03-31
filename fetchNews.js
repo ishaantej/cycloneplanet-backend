@@ -1,3 +1,4 @@
+🔥 fetchNews.js is running
 const https = require('https');
 const fs = require('fs');
 
