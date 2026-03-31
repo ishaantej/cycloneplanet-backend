@@ -1,65 +1,86 @@
 const https = require('https');
 const fs = require('fs');
 
-const url = "https://news.google.com/rss/search?q=tropical+cyclone&hl=en-US&gl=US&ceid=US:en";
+const feeds = [
+  "https://feeds.bbci.co.uk/news/world/rss.xml",
+  "https://www.reutersagency.com/feed/?best-topics=weather&post_type=best"
+];
 
-https.get(url, (res) => {
-  let data = '';
+let allArticles = [];
 
-  console.log("Status:", res.statusCode);
+function fetchFeed(url) {
+  return new Promise((resolve) => {
+    https.get(url, (res) => {
+      let data = '';
 
-  res.on('data', chunk => data += chunk);
+      res.on('data', chunk => data += chunk);
 
-  res.on('end', () => {
-    try {
+      res.on('end', () => {
+        let titles = [...data.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
+        let links = [...data.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]);
 
-      if (!data || data.length < 100) {
-        console.log("❌ No data received");
-      }
+        titles.shift();
+        links.shift();
 
-      let titles = [...data.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
-      let links = [...data.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]);
+        let articles = [];
 
-      titles.shift();
-      links.shift();
+        for (let i = 0; i < titles.length; i++) {
+          articles.push({
+            title: titles[i],
+            link: links[i]
+          });
+        }
 
-      let articles = [];
+        resolve(articles);
+      });
 
-      for (let i = 0; i < titles.length; i++) {
-        articles.push({
-          title: titles[i],
-          link: links[i]
-        });
-      }
+    }).on('error', () => resolve([]));
+  });
+}
 
-      // 🧠 Filter cyclone news
-      let filtered = articles.filter(a =>
-        a.title.toLowerCase().includes("cyclone") ||
-        a.title.toLowerCase().includes("storm") ||
-        a.title.toLowerCase().includes("hurricane") ||
-        a.title.toLowerCase().includes("typhoon")
-      );
+async function run() {
 
-      console.log("Found:", filtered.length, "articles");
+  for (let feed of feeds) {
+    let articles = await fetchFeed(feed);
+    allArticles.push(...articles);
+  }
 
-      let featured = filtered.slice(0, 3);
-      let normal = filtered.slice(3, 10);
-
-      let output = {
-        lastUpdated: new Date().toISOString().split("T")[0],
-        featured: featured,
-        articles: normal
-      };
-
-      fs.writeFileSync("news.json", JSON.stringify(output, null, 2));
-
-      console.log("✅ news.json updated successfully");
-
-    } catch (err) {
-      console.error("❌ Error parsing:", err);
-    }
+  // 🧠 FILTER storm-related news
+  let filtered = allArticles.filter(a => {
+    let t = a.title.toLowerCase();
+    return (
+      t.includes("cyclone") ||
+      t.includes("storm") ||
+      t.includes("hurricane") ||
+      t.includes("typhoon")
+    );
   });
 
-}).on('error', (err) => {
-  console.error("❌ Fetch error:", err);
-});
+  console.log("Total found:", filtered.length);
+
+  // ⭐ FEATURED (important ones)
+  let featured = filtered.filter(a => {
+    let t = a.title.toLowerCase();
+    return (
+      t.includes("warning") ||
+      t.includes("landfall") ||
+      t.includes("intensifying") ||
+      t.includes("danger")
+    );
+  }).slice(0, 3);
+
+  // 📰 NORMAL
+  let normal = filtered.slice(3, 10);
+
+  let output = {
+    lastUpdated: new Date().toISOString().split("T")[0],
+    featured: featured,
+    articles: normal
+  };
+
+  fs.writeFileSync("news.json", JSON.stringify(output, null, 2));
+
+  console.log("✅ news.json updated");
+}
+
+run();
