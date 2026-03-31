@@ -2,37 +2,9 @@
   "lastUpdated": "",
   "theme": "tropical-storm",
 
-  "featured": [
-    {
-      "title": "",
-      "link": "",
-      "tag": "",
-      "priority": "high",
-      "color": "red"
-    },
-    {
-      "title": "",
-      "link": "",
-      "tag": "",
-      "priority": "medium",
-      "color": "orange"
-    },
-    {
-      "title": "",
-      "link": "",
-      "tag": "",
-      "priority": "low",
-      "color": "yellow"
-    }
-  ],
+  "featured": [],
 
-  "articles": [
-    {
-      "title": "",
-      "link": "",
-      "category": "general"
-    }
-  ],
+  "articles": [],
 
   "ui": {
     "carousel": true,
