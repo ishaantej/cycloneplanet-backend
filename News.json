@@ -1,0 +1,44 @@
+{
+  "lastUpdated": "",
+  "theme": "tropical-storm",
+
+  "featured": [
+    {
+      "title": "",
+      "link": "",
+      "tag": "",
+      "priority": "high",
+      "color": "red"
+    },
+    {
+      "title": "",
+      "link": "",
+      "tag": "",
+      "priority": "medium",
+      "color": "orange"
+    },
+    {
+      "title": "",
+      "link": "",
+      "tag": "",
+      "priority": "low",
+      "color": "yellow"
+    }
+  ],
+
+  "articles": [
+    {
+      "title": "",
+      "link": "",
+      "category": "general"
+    }
+  ],
+
+  "ui": {
+    "carousel": true,
+    "maxFeatured": 3,
+    "maxArticles": 10,
+    "showTags": true,
+    "showColors": true
+  }
+}
