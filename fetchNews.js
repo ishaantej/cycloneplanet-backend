@@ -1,9 +1,9 @@
 const https = require('https');
 const fs = require('fs');
 
-const url = "https://feeds.bbci.co.uk/news/world/rss.xml";
+const url = "https://www.sciencedaily.com/rss/earth_climate/hurricanes_and_cyclones.xml";
 
-console.log("🔥 fetchNews.js is running");
+console.log("🔥 fetchNews.js running (ScienceDaily)");
 
 https.get(url, (res) => {
   let data = '';
@@ -11,9 +11,7 @@ https.get(url, (res) => {
   res.on('data', chunk => data += chunk);
 
   res.on('end', () => {
-    console.log("Data length:", data.length);
 
-    // 🧠 Simple split method (more reliable)
     let items = data.split("<item>").slice(1);
 
     let articles = [];
@@ -30,10 +28,12 @@ https.get(url, (res) => {
       }
     });
 
-    console.log("Extracted:", articles.length);
+    console.log("Cyclone articles found:", articles.length);
 
-    // ❗ DO NOT FILTER (for now)
+    // ⭐ Featured (top research headlines)
     let featured = articles.slice(0, 3);
+
+    // 📰 Rest
     let normal = articles.slice(3, 10);
 
     let output = {
@@ -44,9 +44,9 @@ https.get(url, (res) => {
 
     fs.writeFileSync("news.json", JSON.stringify(output, null, 2));
 
-    console.log("✅ news.json UPDATED WITH REAL DATA");
+    console.log("✅ news.json updated with REAL cyclone research news");
   });
 
 }).on('error', (err) => {
-  console.error("❌ Fetch error:", err);
+  console.error("❌ Error:", err);
 });
