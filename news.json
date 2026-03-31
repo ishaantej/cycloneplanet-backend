@@ -1,5 +1,47 @@
 {
   "lastUpdated": "2026-03-31",
-  "featured": [],
-  "articles": []
+  "featured": [
+    {
+      "title": "<![CDATA[China bans storing cremated remains in empty 'bone ash apartments']]>",
+      "link": "https://www.bbc.com/news/articles/cm25ynex2zxo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Sexual violence part of 'everyday life' in parts of Sudan, charity says]]>",
+      "link": "https://www.bbc.com/news/articles/c5ywgn2n3nqo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Eurovision Song Contest launches first-ever Asia edition]]>",
+      "link": "https://www.bbc.com/news/articles/cx2rwq53zxyo?at_medium=RSS&amp;at_campaign=rss"
+    }
+  ],
+  "articles": [
+    {
+      "title": "<![CDATA[Palestinians convicted of lethal attacks face death penalty under new Israeli law]]>",
+      "link": "https://www.bbc.com/news/articles/cp8dkd6lnjdo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Gazan mother reunited with evacuated daughter after two years]]>",
+      "link": "https://www.bbc.com/news/articles/czex10lngzjo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA['A succulent Chinese meal' - iconic Australian quote immortalised in national film archive]]>",
+      "link": "https://www.bbc.com/news/articles/c3exvk1207ko?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Congressman writes to King Charles urging him to meet Epstein victims during US visit]]>",
+      "link": "https://www.bbc.com/news/articles/cn78xp0m75zo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Social media firms must better enforce Australia under-16 ban, watchdog says]]>",
+      "link": "https://www.bbc.com/news/articles/cy4181pkxl2o?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Spain closes airspace to US aircraft involved in Iran war]]>",
+      "link": "https://www.bbc.com/news/articles/cwy368j1e3lo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "title": "<![CDATA[Kid Rock sparks US Army probe after helicopter flyby at his mansion]]>",
+      "link": "https://www.bbc.com/news/articles/cdrmgvzm62no?at_medium=RSS&amp;at_campaign=rss"
+    }
+  ]
 }
