@@ -1,71 +1,63 @@
 const https = require('https');
 const fs = require('fs');
 
-const url = "https://news.google.com/rss/search?q=tropical+cyclone+OR+typhoon+OR+hurricane&hl=en-US&gl=US&ceid=US:en";
+const url = "https://news.google.com/rss/search?q=tropical+cyclone&hl=en-US&gl=US&ceid=US:en";
 
 https.get(url, (res) => {
   let data = '';
 
+  console.log("Status:", res.statusCode);
+
   res.on('data', chunk => data += chunk);
 
   res.on('end', () => {
+    try {
 
-    let titles = [...data.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
-    let links = [...data.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]);
-
-    // remove first item (it's just feed title)
-    titles.shift();
-    links.shift();
-
-    let articles = [];
-
-    for (let i = 0; i < titles.length; i++) {
-      articles.push({
-        title: titles[i],
-        link: links[i]
-      });
-    }
-
-    // 🧠 Filter only relevant storm news
-    let filtered = articles.filter(a =>
-      a.title.toLowerCase().includes("storm") ||
-      a.title.toLowerCase().includes("cyclone") ||
-      a.title.toLowerCase().includes("hurricane") ||
-      a.title.toLowerCase().includes("typhoon")
-    );
-
-    // ⭐ Pick featured (most "interesting")
-    let featured = [];
-    let normal = [];
-
-    filtered.forEach(a => {
-      let title = a.title.toLowerCase();
-
-      if (
-        title.includes("warning") ||
-        title.includes("developing") ||
-        title.includes("landfall") ||
-        title.includes("danger") ||
-        title.includes("intensifying")
-      ) {
-        featured.push(a);
-      } else {
-        normal.push(a);
+      if (!data || data.length < 100) {
+        console.log("❌ No data received");
       }
-    });
 
-    // limit featured to top 3
-    featured = featured.slice(0, 3);
+      let titles = [...data.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
+      let links = [...data.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]);
 
-    let output = {
-      lastUpdated: new Date().toISOString().split("T")[0],
-      featured: featured,
-      articles: normal.slice(0, 10)
-    };
+      titles.shift();
+      links.shift();
 
-    fs.writeFileSync("news.json", JSON.stringify(output, null, 2));
+      let articles = [];
 
-    console.log("✅ news.json updated");
+      for (let i = 0; i < titles.length; i++) {
+        articles.push({
+          title: titles[i],
+          link: links[i]
+        });
+      }
+
+      // 🧠 Filter cyclone news
+      let filtered = articles.filter(a =>
+        a.title.toLowerCase().includes("cyclone") ||
+        a.title.toLowerCase().includes("storm") ||
+        a.title.toLowerCase().includes("hurricane") ||
+        a.title.toLowerCase().includes("typhoon")
+      );
+
+      console.log("Found:", filtered.length, "articles");
+
+      let featured = filtered.slice(0, 3);
+      let normal = filtered.slice(3, 10);
+
+      let output = {
+        lastUpdated: new Date().toISOString().split("T")[0],
+        featured: featured,
+        articles: normal
+      };
+
+      fs.writeFileSync("news.json", JSON.stringify(output, null, 2));
+
+      console.log("✅ news.json updated successfully");
+
+    } catch (err) {
+      console.error("❌ Error parsing:", err);
+    }
   });
 
 }).on('error', (err) => {
