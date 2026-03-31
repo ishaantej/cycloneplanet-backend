@@ -10,23 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write   # 🔥 THIS FIXES EXIT CODE 128
+      contents: write
 
     steps:
-      - uses: actions/checkout@v4   # updated version
+      - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Run script
-        run: node fetch.js
+      # 🔥 RUN BOTH SCRIPTS
+      - name: Run scripts
+        run: |
+          node fetch.js
+          node fetchNews.js
 
+      # 🔥 COMMIT BOTH FILES
       - name: Commit changes
         run: |
           git config user.name "storm-bot"
           git config user.email "storm@bot.com"
-          git add data.json
-          git diff --cached --quiet || git commit -m "update storm data"
+          git add data.json news.json
+          git diff --cached --quiet || git commit -m "update storm + news data"
           git push
