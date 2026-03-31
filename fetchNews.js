@@ -1,4 +1,4 @@
-🔥 fetchNews.js is running
+console.log("🔥 fetchNews.js is running");
 const https = require('https');
 const fs = require('fs');
 
