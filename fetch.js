@@ -9,11 +9,19 @@ https.get(url, (res) => {
   res.on('data', chunk => data += chunk);
 
   res.on('end', () => {
-    // extract storm names like 99S, 05B
-    let matches = data.match(/\d{2}[A-Z]/g) || [];
+
+    let storms = [];
+
+    // Match storm IDs like 99S, 05B, 12W etc.
+    let matches = data.match(/\b\d{2}[A-Z]\b/g);
+
+    if (matches) {
+      // Remove duplicates
+      storms = [...new Set(matches)];
+    }
 
     let output = {
-      storms: matches,
+      storms: storms,
       lastUpdated: new Date().toISOString()
     };
 
