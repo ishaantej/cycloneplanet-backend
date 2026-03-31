@@ -8,36 +8,45 @@ const feeds = [
 
 let allArticles = [];
 
+// 📡 Fetch one feed
 function fetchFeed(url) {
   return new Promise((resolve) => {
     https.get(url, (res) => {
       let data = '';
 
+      console.log("Fetching:", url);
+
       res.on('data', chunk => data += chunk);
 
       res.on('end', () => {
-        let titles = [...data.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
-        let links = [...data.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]);
+        try {
+          let titles = [...data.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
+          let links = [...data.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]);
 
-        titles.shift();
-        links.shift();
+          titles.shift();
+          links.shift();
 
-        let articles = [];
+          let articles = [];
 
-        for (let i = 0; i < titles.length; i++) {
-          articles.push({
-            title: titles[i],
-            link: links[i]
-          });
+          for (let i = 0; i < titles.length; i++) {
+            articles.push({
+              title: titles[i],
+              link: links[i]
+            });
+          }
+
+          resolve(articles);
+
+        } catch {
+          resolve([]);
         }
-
-        resolve(articles);
       });
 
     }).on('error', () => resolve([]));
   });
 }
 
+// 🚀 Main function
 async function run() {
 
   for (let feed of feeds) {
@@ -45,18 +54,23 @@ async function run() {
     allArticles.push(...articles);
   }
 
-  // 🧠 FILTER storm-related news
+  console.log("Total fetched:", allArticles.length);
+
+  // 🧠 FILTER: ANY cyclone-related news
   let filtered = allArticles.filter(a => {
     let t = a.title.toLowerCase();
     return (
       t.includes("cyclone") ||
       t.includes("storm") ||
       t.includes("hurricane") ||
-      t.includes("typhoon")
+      t.includes("typhoon") ||
+      t.includes("weather") ||
+      t.includes("rain") ||
+      t.includes("flood")
     );
   });
 
-  console.log("Total found:", filtered.length);
+  console.log("Filtered:", filtered.length);
 
   // ⭐ FEATURED (important ones)
   let featured = filtered.filter(a => {
@@ -64,12 +78,13 @@ async function run() {
     return (
       t.includes("warning") ||
       t.includes("landfall") ||
+      t.includes("danger") ||
       t.includes("intensifying") ||
-      t.includes("danger")
+      t.includes("alert")
     );
   }).slice(0, 3);
 
-  // 📰 NORMAL
+  // 📰 NORMAL ARTICLES
   let normal = filtered.slice(3, 10);
 
   let output = {
@@ -80,7 +95,7 @@ async function run() {
 
   fs.writeFileSync("news.json", JSON.stringify(output, null, 2));
 
-  console.log("✅ news.json updated");
+  console.log("✅ news.json updated successfully");
 }
 
 run();
