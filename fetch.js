@@ -1,33 +1,17 @@
-const https = require('https');
 const fs = require('fs');
 
-const url = 'https://www.metoc.navy.mil/jtwc/products/abpwsair.txt';
+console.log("🔥 fetch.js running");
 
-https.get(url, (res) => {
-  let data = '';
+// 🧠 NO DATA YET (waiting for real source)
+let storms = [];
 
-  res.on('data', chunk => data += chunk);
+// 📦 OUTPUT STRUCTURE
+let output = {
+  lastUpdated: new Date().toISOString(),
+  storms: storms
+};
 
-  res.on('end', () => {
+// 💾 WRITE FILE
+fs.writeFileSync("data.json", JSON.stringify(output, null, 2));
 
-    let storms = [];
-
-    // Match storm IDs like 99S, 05B, 12W etc.
-    let matches = data.match(/\b\d{2}[A-Z]\b/g);
-
-    if (matches) {
-      // Remove duplicates
-      storms = [...new Set(matches)];
-    }
-
-    let output = {
-      storms: storms,
-      lastUpdated: new Date().toISOString()
-    };
-
-    fs.writeFileSync('data.json', JSON.stringify(output, null, 2));
-  });
-
-}).on('error', (err) => {
-  console.error(err);
-});
+console.log("✅ data.json updated (currently empty)");
