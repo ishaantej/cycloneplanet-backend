@@ -1,4 +1,23 @@
 {
-  "storms": [],
-  "lastUpdated": "2026-04-01T04:23:54.026Z"
+  "lastUpdated": "2026-04-01",
+  "storms": [
+    {
+      "name": "99S",
+      "lat": -12.5,
+      "lon": 85.3,
+      "warning": "low"
+    },
+    {
+      "name": "Invest 91B",
+      "lat": 8.2,
+      "lon": 72.5,
+      "warning": "medium"
+    },
+    {
+      "name": "Cyclone Alpha",
+      "lat": 15.0,
+      "lon": -60.0,
+      "warning": "high"
+    }
+  ]
 }
