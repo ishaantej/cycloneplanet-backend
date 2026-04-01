@@ -1,9 +1,8 @@
 const https = require('https');
 const fs = require('fs');
 
-console.log("🌪️ Fetching real cyclone data...");
+console.log("🌪️ Fetching real cyclone data with coordinates...");
 
-// JTWC text data
 const url = "https://www.metoc.navy.mil/jtwc/products/abpwweb.txt";
 
 https.get(url, (res) => {
@@ -16,35 +15,51 @@ https.get(url, (res) => {
     let lines = data.split("\n");
 
     let storms = [];
+    let currentStorm = null;
 
     lines.forEach(line => {
 
-      // Example detection (very basic)
-      if (line.includes("WARNING")) {
+      // 🧠 Detect storm ID (like 01S, 05B)
+      let nameMatch = line.match(/\b\d{2}[A-Z]\b/);
 
-        let nameMatch = line.match(/[0-9]{2}[A-Z]/);
+      if (nameMatch && line.includes("WARNING")) {
+        let name = nameMatch[0];
 
-        if (nameMatch) {
-          let name = nameMatch[0];
+        // ❌ Skip invests (90–99)
+        if (name.startsWith("9")) return;
 
-          // ❌ Skip invests (90–99)
-          if (name.startsWith("9")) return;
+        currentStorm = {
+          name: name,
+          lat: null,
+          lon: null,
+          warning: "high",
+          type: "cyclone"
+        };
 
-          // 🧠 Dummy coordinates (replace later if needed)
-          let lat = Math.random() * 60 - 30;
-          let lon = Math.random() * 180 - 90;
+        storms.push(currentStorm);
+      }
 
-          storms.push({
-            name: name,
-            lat: lat,
-            lon: lon,
-            warning: "high",
-            type: "cyclone"
-          });
-        }
+      // 📍 Extract coordinates
+      let coordMatch = line.match(/(\d{1,2}\.\d)([NS])\s+(\d{1,3}\.\d)([EW])/);
+
+      if (coordMatch && currentStorm) {
+        let lat = parseFloat(coordMatch[1]);
+        let lon = parseFloat(coordMatch[3]);
+
+        // Convert N/S
+        if (coordMatch[2] === "S") lat = -lat;
+
+        // Convert E/W
+        if (coordMatch[4] === "W") lon = -lon;
+
+        currentStorm.lat = lat;
+        currentStorm.lon = lon;
       }
 
     });
+
+    // ❌ Remove storms without coordinates
+    storms = storms.filter(s => s.lat !== null && s.lon !== null);
 
     let output = {
       lastUpdated: new Date().toISOString(),
@@ -53,7 +68,7 @@ https.get(url, (res) => {
 
     fs.writeFileSync("data.json", JSON.stringify(output, null, 2));
 
-    console.log("✅ Live cyclones updated:", storms.length);
+    console.log("✅ Cyclones with real coordinates:", storms.length);
   });
 
 }).on('error', (err) => {
