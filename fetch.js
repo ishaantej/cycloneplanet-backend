@@ -1,64 +1,68 @@
 const https = require('https');
 const fs = require('fs');
 
-console.log("🌪️ Fetching JTWC data...");
+console.log("🌪️ Fetching JTWC cyclones...");
 
 const sources = [
-  "https://www.metoc.navy.mil/jtwc/products/abpwweb.txt", // Pacific
-  "https://www.metoc.navy.mil/jtwc/products/abioweb.txt"  // Indian Ocean
+  "https://www.metoc.navy.mil/jtwc/products/abpwweb.txt",
+  "https://www.metoc.navy.mil/jtwc/products/abioweb.txt"
 ];
 
 let storms = [];
 
 function fetchSource(url) {
   return new Promise(resolve => {
+
     https.get(url, res => {
       let data = '';
 
       res.on('data', chunk => data += chunk);
 
       res.on('end', () => {
+
         let lines = data.split("\n");
 
-        let currentStorm = null;
+        for (let i = 0; i < lines.length; i++) {
 
-        lines.forEach(line => {
+          let line = lines[i];
 
-          // 🧠 Detect storm ID (01W, 02B etc)
+          // 🧠 Detect storm ID (01B, 02W, etc)
           let idMatch = line.match(/\b\d{2}[A-Z]\b/);
 
-          if (idMatch && line.includes("WARNING")) {
+          if (idMatch) {
             let id = idMatch[0];
 
-            // ❌ Skip invests (90–99)
-            if (id.startsWith("9")) return;
+            // ❌ Skip invests
+            if (id.startsWith("9")) continue;
 
-            currentStorm = {
-              name: id,
-              lat: null,
-              lon: null,
-              warning: "high",
-              type: "cyclone"
-            };
+            // 🔍 Look ahead for coordinates
+            for (let j = i; j < i + 10; j++) {
 
-            storms.push(currentStorm);
+              let coordLine = lines[j];
+
+              let coordMatch = coordLine.match(/(\d{1,2}\.\d)([NS])\s+(\d{1,3}\.\d)([EW])/);
+
+              if (coordMatch) {
+
+                let lat = parseFloat(coordMatch[1]);
+                let lon = parseFloat(coordMatch[3]);
+
+                if (coordMatch[2] === "S") lat = -lat;
+                if (coordMatch[4] === "W") lon = -lon;
+
+                storms.push({
+                  name: id,
+                  lat: lat,
+                  lon: lon,
+                  warning: "high",
+                  type: "cyclone"
+                });
+
+                break; // stop searching for this storm
+              }
+            }
           }
-
-          // 📍 Coordinates
-          let coordMatch = line.match(/(\d{1,2}\.\d)([NS])\s+(\d{1,3}\.\d)([EW])/);
-
-          if (coordMatch && currentStorm) {
-            let lat = parseFloat(coordMatch[1]);
-            let lon = parseFloat(coordMatch[3]);
-
-            if (coordMatch[2] === "S") lat = -lat;
-            if (coordMatch[4] === "W") lon = -lon;
-
-            currentStorm.lat = lat;
-            currentStorm.lon = lon;
-          }
-
-        });
+        }
 
         resolve();
       });
@@ -73,9 +77,6 @@ async function run() {
     await fetchSource(src);
   }
 
-  // ❌ Remove storms without coords
-  storms = storms.filter(s => s.lat !== null && s.lon !== null);
-
   let output = {
     lastUpdated: new Date().toISOString(),
     storms: storms
@@ -83,7 +84,7 @@ async function run() {
 
   fs.writeFileSync("data.json", JSON.stringify(output, null, 2));
 
-  console.log("✅ Cyclones found:", storms.length);
+  console.log("✅ Storms found:", storms.length);
 }
 
 run();
