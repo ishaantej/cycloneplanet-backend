@@ -1,90 +1,151 @@
 const https = require('https');
 const fs = require('fs');
 
-console.log("🌪️ Fetching JTWC cyclones...");
+console.log("🌪️ Fetching JTWC RSS...");
 
-const sources = [
-  "https://www.metoc.navy.mil/jtwc/products/abpwweb.txt",
-  "https://www.metoc.navy.mil/jtwc/products/abioweb.txt"
-];
+// JTWC RSS feed
+const url = "https://www.metoc.navy.mil/jtwc/rss.xml";
 
-let storms = [];
+https.get(url, (res) => {
+  let data = '';
 
-function fetchSource(url) {
-  return new Promise(resolve => {
+  res.on('data', chunk => data += chunk);
 
-    https.get(url, res => {
-      let data = '';
+  res.on('end', () => {
 
-      res.on('data', chunk => data += chunk);
+    let items = data.split("<item>").slice(1);
 
-      res.on('end', () => {
+    let storms = [];
 
-        let lines = data.split("\n");
+    items.forEach(item => {
 
-        for (let i = 0; i < lines.length; i++) {
+      let titleMatch = item.match(/<title>(.*?)<\/title>/);
+      let descMatch = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/);
 
-          let line = lines[i];
+      if (titleMatch && descMatch) {
 
-          // 🧠 Detect storm ID (01B, 02W, etc)
-          let idMatch = line.match(/\b\d{2}[A-Z]\b/);
+        let title = titleMatch[1];
+        let desc = descMatch[1];
 
-          if (idMatch) {
-            let id = idMatch[0];
+        // ❌ Skip "No Active"
+        if (title.includes("No Active")) return;
 
-            // ❌ Skip invests
-            if (id.startsWith("9")) continue;
+        // 🧠 Extract storm ID
+        let idMatch = title.match(/\d{2}[A-Z]/);
 
-            // 🔍 Look ahead for coordinates
-            for (let j = i; j < i + 10; j++) {
+        if (!idMatch) return;
 
-              let coordLine = lines[j];
+        let id = idMatch[0];
 
-              let coordMatch = coordLine.match(/(\d{1,2}\.\d)([NS])\s+(\d{1,3}\.\d)([EW])/);
+        // ❌ Skip invests
+        if (id.startsWith("9")) return;
 
-              if (coordMatch) {
+        // 📍 Extract coordinates from description
+        let coordMatch = desc.match(/(\d{1,2}\.\d)([NS])\s+(\d{1,3}\.\d)([EW])/);
 
-                let lat = parseFloat(coordMatch[1]);
-                let lon = parseFloat(coordMatch[3]);
+        if (!coordMatch) return;
 
-                if (coordMatch[2] === "S") lat = -lat;
-                if (coordMatch[4] === "W") lon = -lon;
+        let lat = parseFloat(coordMatch[1]);
+        let lon = parseFloat(coordMatch[3]);
 
-                storms.push({
-                  name: id,
-                  lat: lat,
-                  lon: lon,
-                  warning: "high",
-                  type: "cyclone"
-                });
+        if (coordMatch[2] === "S") lat = -lat;
+        if (coordMatch[4] === "W") lon = -lon;
 
-                break; // stop searching for this storm
-              }
-            }
-          }
-        }
+        storms.push({
+          name: id,
+          lat: lat,
+          lon: lon,
+          warning: "high",
+          type: "cyclone"
+        });
+      }
+    });
 
-        resolve();
-      });
+    let output = {
+      lastUpdated: new Date().toISOString(),
+      storms: storms
+    };
 
-    }).on('error', () => resolve());
+    fs.writeFileSync("data.json", JSON.stringify(output, null, 2));
+
+    console.log("✅ Storms found:", storms.length);
   });
-}
 
-async function run() {
+}).on('error', (err) => {
+  console.error("❌ Error:", err);
+});const https = require('https');
+const fs = require('fs');
 
-  for (let src of sources) {
-    await fetchSource(src);
-  }
+console.log("🌪️ Fetching JTWC RSS...");
 
-  let output = {
-    lastUpdated: new Date().toISOString(),
-    storms: storms
-  };
+// JTWC RSS feed
+const url = "https://www.metoc.navy.mil/jtwc/rss.xml";
 
-  fs.writeFileSync("data.json", JSON.stringify(output, null, 2));
+https.get(url, (res) => {
+  let data = '';
 
-  console.log("✅ Storms found:", storms.length);
-}
+  res.on('data', chunk => data += chunk);
 
-run();
+  res.on('end', () => {
+
+    let items = data.split("<item>").slice(1);
+
+    let storms = [];
+
+    items.forEach(item => {
+
+      let titleMatch = item.match(/<title>(.*?)<\/title>/);
+      let descMatch = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/);
+
+      if (titleMatch && descMatch) {
+
+        let title = titleMatch[1];
+        let desc = descMatch[1];
+
+        // ❌ Skip "No Active"
+        if (title.includes("No Active")) return;
+
+        // 🧠 Extract storm ID
+        let idMatch = title.match(/\d{2}[A-Z]/);
+
+        if (!idMatch) return;
+
+        let id = idMatch[0];
+
+        // ❌ Skip invests
+        if (id.startsWith("9")) return;
+
+        // 📍 Extract coordinates from description
+        let coordMatch = desc.match(/(\d{1,2}\.\d)([NS])\s+(\d{1,3}\.\d)([EW])/);
+
+        if (!coordMatch) return;
+
+        let lat = parseFloat(coordMatch[1]);
+        let lon = parseFloat(coordMatch[3]);
+
+        if (coordMatch[2] === "S") lat = -lat;
+        if (coordMatch[4] === "W") lon = -lon;
+
+        storms.push({
+          name: id,
+          lat: lat,
+          lon: lon,
+          warning: "high",
+          type: "cyclone"
+        });
+      }
+    });
+
+    let output = {
+      lastUpdated: new Date().toISOString(),
+      storms: storms
+    };
+
+    fs.writeFileSync("data.json", JSON.stringify(output, null, 2));
+
+    console.log("✅ Storms found:", storms.length);
+  });
+
+}).on('error', (err) => {
+  console.error("❌ Error:", err);
+});
